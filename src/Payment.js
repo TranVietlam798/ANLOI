@@ -1,19 +1,21 @@
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import axios from "axios";
+import axios from "./axios";
 import React, { useEffect, useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useHistory } from "react-router-dom";
 import CheckoutProduct from "./CheckoutProduct";
 import "./Payment.css";
-import { getBasketTotal } from "./Reducer";
+import { getBasketTotal } from "./reducer";
 import { useStateValue } from "./StateProvider";
+import { db } from "./firebase";
+import firebase from 'firebase'
 
 function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
-  const history= useHistory
+  const history = useHistory();
 
   const stripe = useStripe();
-  const element = useElements();
+  const elements = useElements();
 
   const [succeeded, setSucceeded] = useState(false);
   const [processing, setProcessing] = useState("");
@@ -21,32 +23,57 @@ function Payment() {
   const [disabled, setDisabled] = useState(true);
   const [clientSecret, setClientSecret] = useState(true);
 
-  useEffect(() => {
-    const getClientSecret = async () => {
-      const reponse = await axios({
-        menthod: "post",
-        url: `/payment/create?tatal=${getBasketTotal(basket)}`,
-      });
-      setClientSecret(reponse.data.clientSecret);
-    };
-    getClientSecret();
-  }, [basket]);
+  // useEffect(() => {
+  //   const getClientSecret = async () => {
+  //     const res = await axios({
+  //       method: "post",
+  //       url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
+  //     });
+  //     setClientSecret(res.data.clientSecret);
+  //   };
+  //   getClientSecret();
+  // }, [basket]);
+
+  // console.log("THE SECRET IS >>>", clientSecret);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setProcessing(true);
-    const payLoad = await stripe
-      .confirmAlipayPayment(clientSecret, {
-        payment_method: {
-          card: element.getElement(CardElement),
-        },
-      })
-      .then(({ PaymentIntent }) => {
-        setSucceeded(true);
-        setError(null);
-        setProcessing(false);
-        history.replaceState("/order");
+    db.collection("users")
+      .doc(user?.uid)
+      .collection("orders")
+      .add({
+        basket: basket,
+        amount: getBasketTotal(basket) * 100,
+        timestamps: firebase.firestore.FieldValue.serverTimestamp(),
       });
+
+    // setProcessing(true);
+    // const payLoad = await stripe
+    //   .confirmCardPayment(clientSecret, {
+    //     payment_method: {
+    //       card: elements.getElement(CardElement),
+    //     },
+    //   })
+    //   .then(({ paymentIntent }) => {
+    //     db.collection("users")
+    //       .doc(user?.uid)
+    //       .collection("orders")
+    //       .doc(paymentIntent.id)
+    //       .set({
+    //         basket: basket,
+    //         amount: paymentIntent.amount,
+    //         created: paymentIntent.created,
+    //       });
+    //     setSucceeded(true);
+    //     setError(null);
+    //     setProcessing(false);
+
+        dispatch({
+          type: "EMPTY_BASKET",
+        });
+
+        history.replace("/orders");
+    //   });
   };
 
   const handleChange = (e) => {

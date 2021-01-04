@@ -1,18 +1,20 @@
 import firebase from "firebase";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC9oWWlzN0IRmNXmn0ngYFZJfz4HIoFc8I",
-  authDomain: "anloi-challenge.firebaseapp.com",
-  projectId: "anloi-challenge",
-  storageBucket: "anloi-challenge.appspot.com",
-  messagingSenderId: "691641905142",
-  appId: "1:691641905142:web:62c081e4105a619e7921d7",
-  measurementId: "G-S749SJS2VG",
+  apiKey: "AIzaSyD2iz_mjS7LaRiBXpC9beQIoUZ3eEcNEkw",
+  authDomain: "anloi-challenge-8f8fa.firebaseapp.com",
+  projectId: "anloi-challenge-8f8fa",
+  storageBucket: "anloi-challenge-8f8fa.appspot.com",
+  messagingSenderId: "549228021199",
+  appId: "1:549228021199:web:983de56cad2f5f836d7eba",
+  measurementId: "G-9NNNJGXH59"
 };
+
+
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 const db = firebaseApp.firestore();
-const auth = firebaseApp.auth();
+const auth = firebase.auth();
 
 export { db, auth };
